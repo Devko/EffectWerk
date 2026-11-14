@@ -76,7 +76,7 @@ matrix across all of them. It is built on the same groundwork as its siblings
 
 Download a release package (`EffectWerk-<version>-mpc-armv7.zip`) from
 [Releases](https://github.com/Devko/EffectWerk/releases) (or from the
-[plugin catalog](https://sd88me.github.io/mpc-vst-plugins/)), or build one with `make plugin-package`.
+[plugin catalog](https://open-mpc.github.io/)), or build one with `make plugin-package`.
 Unzip it and follow the `INSTALL.md` inside. In short:
 
 ```sh
@@ -90,6 +90,13 @@ starts MPC again. Running it again upgrades in place and keeps your own presets 
 folder) and favorites. Then add **EffectWerk** to a track's insert (or a return, a submix, the
 master) from MPC's effect plugins. To play the performance mixer with the Force's crossfader, learn
 it to EffectWerk's Crossfader ([how](docs/USER_GUIDE.md#the-crossfader)).
+
+**MPC OS 3.10.1 and later** load plugins only from a folder named `VST2 Plugins` at the root of a drive (internal, SD
+card or USB), with Preferences → Enhancements → External Plugin Support on; `/sdcard/Synths` is no longer listed. No SSH
+needed: unzip `EffectWerk-<version>-mpc-sdk.zip` and copy its `Devko - VST - EffectWerk` folder into `VST2 Plugins`, or use
+the catalog's Plugin Manager. The installer above also works there: `install.sh -t "<drive>/VST2 Plugins"`
+(`make plugin-install INSTALL_TO=...`). Remove an older copy from `/sdcard/Synths` after moving your presets: MPC may draw
+its skin instead.
 
 To uninstall, run the package's `uninstall.sh` the same way: it stops MPC, removes the plugin and its
 `MPC.settings` entry (after a backup) and starts MPC again; your own presets and favorites stay in the
@@ -106,7 +113,7 @@ make test-arm              # the same suite built for the Force, under qemu-arm
 make test-module M=reverb  # one module's tests on their own
 make arm-plugin            # build/arm/effectwerk.so
 make skin preview          # the skin, and every page as surface/build/page_*.png
-make plugin-package        # dist/EffectWerk-<version>-mpc-armv7.zip
+make plugin-package        # dist/EffectWerk-<version>-mpc-armv7.zip and -mpc-sdk.zip (MPC OS 3.10.1)
 make plugin-install        # onto the Force (FORCE=root@<ip> in local.mk); restarts MPC
 make bench-device          # CPU per module and all at once, on the Force
 make bench-count           # the same cases' exact ARM instructions per block, under qemu
@@ -121,7 +128,7 @@ checks; it writes `params.json`, `layout.conf`, `vst.json` and the C++ headers.
 Release packages come from CI ([`.github/workflows/build.yml`](.github/workflows/build.yml)), never from
 a local build: the device build runs in `arm32v7/gcc:11-bullseye` (GCC 11, glibc 2.31) under QEMU,
 profile-guided, the suite runs against the objects the `.so` is linked from, and the zip must pass the
-[plugin catalog](https://github.com/sd88me/mpc-vst-plugins)'s `catalog_check.py`. Every run keeps the
+[plugin catalog](https://github.com/open-mpc/mpc-vst-plugins)'s `catalog_check.py`. Every run keeps the
 zip as an artifact. To release:
 
 1. Add a `## X.Y.Z` section to [CHANGELOG.md](CHANGELOG.md): it becomes the release's notes, which the
@@ -149,6 +156,7 @@ from v0.1 it is append-only.
 | 0.0.3 — Melodic: ten chains for melodic techno (72 presets) | ✅ |
 | 0.0.4 — the third review: Q-Links and automation cost a knob, not the whole patch; Grain, presets, Filter fixes | ✅ |
 | 0.0.5 — the new name, EffectWerk (presets, favorites and saved projects carry over); a Delay fix on ARM | ✅ |
+| 0.0.6 — MPC OS 3.10.1: `plugin.json` in the folder, the SDK-format zip for `VST2 Plugins` | 🔜 |
 | In the plugin catalog (the registry entry's PR) | 🔜 |
 | v0.1 — parameter list frozen (append-only from then on) | ⬜ |
 

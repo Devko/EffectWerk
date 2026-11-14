@@ -32,10 +32,14 @@ if [ -z "$MPC_INSTALL_TEST" ]; then
     [ "$(id -u)" = 0 ] || die "run as root"
     command -v systemctl >/dev/null || die "systemctl not found"
 fi
-SETTINGS="${MPC_SETTINGS:-$(ls /media/az01-internal/Settings/*/MPC.settings 2>/dev/null | head -n 1)}"
+SETTINGS="${MPC_SETTINGS:-$(ls /media/az01-internal/Settings/*/MPC.settings /data/Settings/*/MPC.settings /data/Settings/*/MPC?Sample/MPC?Sample.settings 2>/dev/null | head -n 1)}"
 [ -n "$SETTINGS" ] && [ -f "$SETTINGS" ] || die "MPC.settings not found (not an MPC OS device?)"
 if [ -z "$ROOTS" ]; then
     ROOTS="/sdcard/Synths"
+    # Gen2: MPC.settings lists /synths/Synths as a content location (see docs/NOTES.md, 2026-10-10); scan it
+    # too when present. Harmless on Gen1/Force, where /synths doesn't exist.
+    [ -d /synths/Synths ] && ROOTS="$ROOTS
+/synths/Synths"
     for r in /media/*/Synths; do [ -d "$r" ] && ROOTS="$ROOTS
 $r"; done
 fi
@@ -92,9 +96,10 @@ if [ $YES = 0 ]; then
     read -r ok; case "$ok" in y|Y|yes) ;; *) echo "cancelled"; exit 1 ;; esac
 fi
 
-# MPC's service is acvs on stock firmware, inmusic-mpc on Hakai-enabled systems; use whichever exists (acvs if neither is found).
+# MPC's service: acvs on stock Gen1/Gen2/Force, ac50 on the MPC Sample, inmusic-mpc on Hakai-enabled systems.
 mpc_service() {
-    if systemctl cat acvs >/dev/null 2>&1; then echo acvs
+    if systemctl cat ac50 >/dev/null 2>&1; then echo ac50
+    elif systemctl cat acvs >/dev/null 2>&1; then echo acvs
     elif systemctl cat inmusic-mpc >/dev/null 2>&1; then echo inmusic-mpc
     else echo acvs; fi
 }
@@ -103,13 +108,13 @@ mpc_ctl() {   # stop | start; a test run logs the call to $MPC_TEST_LOG instead 
     systemctl "$1" "$(mpc_service)"
 }
 if [ $DEFER = 1 ]; then
-    [ -n "$MPC_INSTALL_TEST" ] || ! pidof MPC >/dev/null || die "MPC is running: with -n stop it first (stop the MPC service first, see INSTALL.md)"
+    [ -n "$MPC_INSTALL_TEST" ] || ! { pidof MPC || pidof "MPC Sample"; } >/dev/null 2>&1 || die "MPC is running: with -n stop it first (stop the MPC service first, see INSTALL.md)"
 else
     mpc_ctl stop
     trap 'mpc_ctl start; rm -rf "$W"' EXIT
     if [ -z "$MPC_INSTALL_TEST" ]; then
-        i=0; while pidof MPC >/dev/null && [ $i -lt 30 ]; do sleep 1; i=$((i + 1)); done
-        pidof MPC >/dev/null && die "MPC did not stop"
+        i=0; while { pidof MPC || pidof "MPC Sample"; } >/dev/null 2>&1 && [ $i -lt 30 ]; do sleep 1; i=$((i + 1)); done
+        { pidof MPC || pidof "MPC Sample"; } >/dev/null 2>&1 && die "MPC did not stop"
     fi
 fi
 
@@ -122,7 +127,10 @@ done < "$W/drop"
 while IFS=$TAB read -r uid file meta; do   # added or replaced: same uid or same file goes first
     root=$(dirname "$(dirname "$meta")")
     sed "s|%payload-path%|$root|g" "$meta" | tr '\n' ' ' | grep -o '<PLUGIN [^>]*>' | head -n 1 > "$W/entry"
-    awk -v mode=add -v file="$file" -v uid="$uid" -v entryfile="$W/entry" -f plugin_list.awk "$W/cur" > "$W/next" && mv "$W/next" "$W/cur"
+    # same key choice as install.sh (see plugin_list.awk): the installed folder carries its own mpc-plugin.json
+    pkgarch=$(sed -n 's/.*"arch": *"\([a-z0-9]*\)".*/\1/p' "$(dirname "$meta")/mpc-plugin.json" 2>/dev/null | head -n 1)
+    case "$pkgarch" in aarch64) listkey=pluginList-arm-64bit ;; *) listkey=pluginList-arm ;; esac
+    awk -v mode=add -v file="$file" -v uid="$uid" -v entryfile="$W/entry" -v listkey="$listkey" -f plugin_list.awk "$W/cur" > "$W/next" && mv "$W/next" "$W/cur"
 done < "$W/add"
 # check: every planned uid is there exactly once, the root element is intact, valid XML when python3 exists
 while IFS=$TAB read -r uid file meta; do

@@ -58,7 +58,9 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: EffectWerk-mpc-armv7
-          path: dist/*-mpc-armv7.zip
+          path: |
+            dist/*-mpc-armv7.zip
+            dist/*-mpc-sdk.zip
           if-no-files-found: error
       # The release's notes are CHANGELOG.md's section for the tag's version ("## X.Y.Z"): the catalog shows
       # them. A tag without a section fails here, before anything is published. (SubWerk's.)
@@ -72,6 +74,10 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          files: dist/*-mpc-armv7.zip
+          # -mpc-sdk.zip: Akai's folder format for MPC OS 3.10.1+ (copy by hand into VST2 Plugins); the catalog shows it
+          # as "Download (3.10.1 format)". The installers keep using the -mpc-armv7.zip.
+          files: |
+            dist/*-mpc-armv7.zip
+            dist/*-mpc-sdk.zip
           prerelease: ${{ contains(github.ref_name, '-') }}
           body_path: release-notes.md

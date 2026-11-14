@@ -256,7 +256,7 @@ $(EFCOUNT): tools/efcount.c | $(BUILD)
 
 # Release zip: plugin + skin + sd88me's installer (stops MPC, backs up and edits MPC.settings,
 # restarts MPC). The plugin-list entry says Effect with 2 inputs: MPC lists it under insert effects.
-PLUGIN_VERSION ?= 0.0.5
+PLUGIN_VERSION ?= 0.0.6
 PKG      := EffectWerk-$(PLUGIN_VERSION)
 plugin-package: $(ARM_SO) $(SKIN)
 	@# Everything shipped runs under BusyBox on the device: a CR in a script breaks it there.
@@ -273,6 +273,9 @@ plugin-package: $(ARM_SO) $(SKIN)
 		--requires "root SSH (MockbaMod)" \
 		--user-data Presets --user-data preset_favorites.txt --user-data preset_recent.txt \
 		--previous-name "$(strip $(PREV_NAME))" -o dist
+	@# MPC OS 3.10.1+: the same plugin folder in Akai's SDK layout (one folder, its plugin.json naming the .so as
+	@# effectwerk-arm32.so), to copy by hand into a drive's "VST2 Plugins"; the catalog offers it as the 3.10.1 download.
+	$(PY) $(MV)/tools/sdk_zip.py dist/$(PKG)-mpc-sdk.zip dist/$(PKG)-mpc-armv7.zip
 
 # The package's installer against scratch folders: an upgrade from the old name moves the user's files over; and
 # release.py refuses an old name that isn't one. (Used as $(strip $(PREV_NAME)): make keeps the space before a comment.)
@@ -283,19 +286,23 @@ test-install: plugin-package
 
 # Install on a device: stops MPC, backs up + edits MPC.settings, restarts MPC. Save the MPC
 # project first. Usage: make plugin-install FORCE=root@<ip>
+# MPC OS 3.10.1 lists plugins only from a drive's "VST2 Plugins" folder, not /sdcard/Synths: there, add
+# INSTALL_TO="<drive>/VST2 Plugins" (the same for plugin-uninstall).
+INSTALL_TO ?=
+INSTALL_T := $(if $(strip $(INSTALL_TO)), -t "$(strip $(INSTALL_TO))")
 PKG_TMP := /tmp/efpkg
 plugin-install: plugin-package
 	rm -rf $(PKG_TMP) && mkdir -p $(PKG_TMP)
 	python3 -c 'import sys, zipfile; zipfile.ZipFile(sys.argv[1]).extractall(sys.argv[2])' dist/$(PKG)-mpc-armv7.zip $(PKG_TMP)
 	tar -C $(PKG_TMP) -cf - $(PKG) | ssh $(SSH_OPTS) $(FORCE) 'rm -rf /tmp/$(PKG) && tar -C /tmp -xf -'
-	$(SSH) $(FORCE) 'sh /tmp/$(PKG)/install.sh -y'
+	$(SSH) $(FORCE) 'sh /tmp/$(PKG)/install.sh -y$(INSTALL_T)'
 
 # Remove it again (also stops and restarts MPC); keeps the user's presets.
 plugin-uninstall: plugin-package
 	rm -rf $(PKG_TMP) && mkdir -p $(PKG_TMP)
 	python3 -c 'import sys, zipfile; zipfile.ZipFile(sys.argv[1]).extractall(sys.argv[2])' dist/$(PKG)-mpc-armv7.zip $(PKG_TMP)
 	tar -C $(PKG_TMP) -cf - $(PKG) | ssh $(SSH_OPTS) $(FORCE) 'rm -rf /tmp/$(PKG) && tar -C /tmp -xf -'
-	$(SSH) $(FORCE) 'sh /tmp/$(PKG)/uninstall.sh -y'
+	$(SSH) $(FORCE) 'sh /tmp/$(PKG)/uninstall.sh -y$(INSTALL_T)'
 
 $(BUILD):
 	mkdir -p $(BUILD)
