@@ -270,7 +270,6 @@ plugin-package: $(ARM_SO) $(SKIN)
 	$(PY) $(MV)/tools/release.py --so $(ARM_SO) --skin "$(SKIN_DIR)" --entry $(SURF_OUT)/pluginlist-entry.xml \
 		--version $(PLUGIN_VERSION) --repo Devko/EffectWerk --license MIT \
 		--about "EffectWerk effect rack (preview): drive, filter, EQ, compressor / OTT, chorus, phaser / flanger, tremolo / auto-pan / gate, granular textures, delay and a reverb with shimmer, in any order, with macros, LFOs, an envelope follower and a mod matrix; and an Octatrack-style performance mixer: two scenes on the crossfader, 64 effects that fade in (the sweeps and risers move on the bar), a looper on the grid." \
-		--requires "root SSH (MockbaMod)" \
 		--user-data Presets --user-data preset_favorites.txt --user-data preset_recent.txt \
 		--previous-name "$(strip $(PREV_NAME))" -o dist
 	@# MPC OS 3.10.1+: the same plugin folder in Akai's SDK layout (one folder, its plugin.json naming the .so as

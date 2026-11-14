@@ -66,8 +66,9 @@ matrix across all of them. It is built on the same groundwork as its siblings
 ## Requirements
 
 - An **Akai Force**. Other first-generation (32-bit ARM) MPC OS devices may work but are untested.
-- **Root SSH access** to the device (for example through MockbaMod). Stock MPC OS has no way to
-  install third-party plugins.
+- **MPC OS 3.10.1 or later** runs it as it comes: copy it into a `VST2 Plugins` folder (see below). On 3.9.1
+  and earlier, install it with the [plugin catalog](https://open-mpc.github.io/)'s Plugin Manager, or with the
+  package's `install.sh` over root SSH (for example through MockbaMod).
 - **MPC OS 3.x** (tested on 3.9). Release builds are made against glibc 2.31 but need GCC 11's
   libstdc++, and MPC OS 2.x doesn't draw a plugin's pages: 2.x is untested. A local build with a newer
   cross toolchain needs glibc 2.38 (3.x only; see [Releases](#releases)).

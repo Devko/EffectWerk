@@ -19,6 +19,8 @@ between releases.
   (MPC may otherwise draw that folder's skin).
 - For the Force and the first-generation MPCs (32-bit); there is no build for the 64-bit MPCs (Live III, XL) yet.
 - The release tools are the plugin catalog's current ones (open-mpc/mpc-vst-plugins).
+- The catalog no longer lists root SSH as a requirement: MPC OS 3.10.1 needs none, and on earlier versions the
+  catalog's Plugin Manager installs it.
 
 ## 0.0.5
 
