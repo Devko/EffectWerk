@@ -93,7 +93,7 @@ master) from MPC's effect plugins. To play the performance mixer with the Force'
 it to EffectWerk's Crossfader ([how](docs/USER_GUIDE.md#the-crossfader)).
 
 **MPC OS 3.10.1 and later** load plugins only from a folder named `VST2 Plugins` at the root of a drive (internal, SD
-card or USB), with Preferences → Enhancements → External Plugin Support on; `/sdcard/Synths` is no longer listed. No SSH
+card or USB), with Preferences → Enhancements (Beta) → Enable Enhancements and External Plugin Support on; `/sdcard/Synths` is no longer listed. No SSH
 needed: unzip `EffectWerk-<version>-mpc-sdk.zip` and copy its `Devko - VST - EffectWerk` folder into `VST2 Plugins`, or use
 the catalog's Plugin Manager. The installer above also works there: `install.sh -t "<drive>/VST2 Plugins"`
 (`make plugin-install INSTALL_TO=...`). Remove an older copy from `/sdcard/Synths` after moving your presets: MPC may draw

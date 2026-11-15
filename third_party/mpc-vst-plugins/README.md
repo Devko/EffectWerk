@@ -6,7 +6,8 @@ https://github.com/open-mpc/mpc-vst-plugins (the repo's new home) at commit
 `0dc17120cd7e952e95eeecdd820ac9e495a75ee9` (2026-11-12, the one its MPC OS 3.10.1 notice names) on 2026-11-14:
 `tools/release.py`, `tools/release/*`, `tools/catalog_check.py`, and the new `tools/sdk_zip.py`, `deps.py`,
 `skin_compat.py`, `skin_roles_2x.json`, `user_files.py` they need. They write the `plugin.json` MPC OS 3.10.1
-needs and the Akai SDK-format zip. The skin tools (`gen_vst.py`, `shadow_skin.py`, `studio*.py`, `skin_assets.py`,
+needs and the Akai SDK-format zip. Upstream's `40ecb91` (2026-11-13) was applied on top on 2026-11-15:
+`plugin.json` carries `"format": "vst2"`, which Akai's plugin.json schema requires. The skin tools (`gen_vst.py`, `shadow_skin.py`, `studio*.py`, `skin_assets.py`,
 `shadow_art.c`, `params.py`) and `wrapper/` stay at 670b20b9: upstream's changes there are new features we don't use,
 and re-copying them would change the skin. License: see `LICENSE`
 (MIT, Copyright (c) 2026 sd88me); `tools/vendor/force-shadow/` carries its own MIT LICENSE.
